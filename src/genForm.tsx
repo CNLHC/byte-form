@@ -231,7 +231,7 @@ interface IGetFormOpt {
 
 export interface FormAction{
     getValue:()=>{[key:string]:any},
-    getValidate:()=>void
+    getValidate:()=>{[key:string]:boolean}
     forceValidate:()=>void
     check:()=>boolean
 }

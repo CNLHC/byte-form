@@ -34,8 +34,7 @@ export const pipeInit: (fm: AllFieldMetaUnion) => PiplineStage = (fm: AllFieldMe
     return e
 }
 
-const validatorStage: (va: IValidator,key:string) => PiplineStage = (va,key) => (e) => {
-    // if (e.fieldStore[key].validate===false) return e;
+const validatorStage: (va: IValidator, key: string) => PiplineStage = (va, key) => (e) => {
 
     e.fieldStore[key].validate = true;
     e.fieldStore[key].helpinfo = undefined;
@@ -52,7 +51,7 @@ const validatorStage: (va: IValidator,key:string) => PiplineStage = (va,key) => 
             //need more complex getter function here
             const templateReg = va.name === "required" ? /^.+$/ : undefined
             validateStatus = templateReg ? (templateReg.exec(normalizedValue) !== null) : true
-            if(!validateStatus)e.fieldStore[key].helpinfo=va.message?va.message:"该项为必填项"
+            if (!validateStatus) e.fieldStore[key].helpinfo = va.message ? va.message : "该项为必填项"
             e.fieldStore[key].validate = e.fieldStore[key].validate && validateStatus
             break;
         case "regex":
@@ -80,15 +79,16 @@ const validatorStage: (va: IValidator,key:string) => PiplineStage = (va,key) => 
     return e
 }
 
-export const pipeValidators: (fs: ByteFormFieldState) => PiplineStage = (fs) =>(e)=> {
+export const pipeValidators: (fs: ByteFormFieldState) => PiplineStage = (fs) => (e) => {
     const validators = !!fs.validators ? fs.validators : []
-    validators.map(v => validatorStage(v,fs.key)(e))
+    validators.map(v => validatorStage(v, fs.key)(e))
     return e
 }
 
-export const pipeForceValidate:()=>PiplineStage=()=>(e)=>{
-    
-    Object.entries(e.fieldStore).map(([key,fs])=>fs.validators?fs.validators.map(v=>validatorStage(v,key)(e)):[])
+export const pipeForceValidate: () => PiplineStage = () => (e) => {
+    Object.entries(e.fieldStore).map(([key, fs]) => fs.validators ?
+     fs.validators.map(v => validatorStage(v, key)(e)) :
+      (() => e.fieldStore[key].validate = true)())
 
     return e
 
