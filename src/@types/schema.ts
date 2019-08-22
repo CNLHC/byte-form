@@ -38,6 +38,7 @@ interface IBaseValidator{
     placeholder?: string
     style?: React.CSSProperties
     disable?:boolean
+    helptext?:string
 }
 
 export type AllFieldMetaUnion = FieldMeta<GenricFieldBase>

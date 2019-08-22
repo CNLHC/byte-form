@@ -1,5 +1,5 @@
 import React, { useEffect, forwardRef, ReactNode, ReactChild, useState } from 'react'
-import { Form, Input, InputNumber, Select, DatePicker } from 'antd';
+import { Form, Input, InputNumber, Select, DatePicker, Tooltip, Icon } from 'antd';
 import { Provider, useDispatch, useSelector } from 'react-redux'
 import { GetStore, action, } from './models'
 import { composePipeline, pipeInit, pipeValidators, pipeBindValue, pipeSendBack, pipeMutation, pipeRefreshMetaCache, pipeBindToExternal, pipeForceValidate } from './stage';
@@ -23,16 +23,16 @@ const SwitchField = (props: {
     fs: ByteFormFieldState
     cb?: (e: any) => void
     ef?: IExtraField
-    vff?:boolean
+    vff?: boolean
 }) => {
-    const { cb, fs, ef, vff} = props
+    const { cb, fs, ef, vff } = props
     const { type, preset } = fs
     const dispatch = useDispatch()
     useEffect(() => {
         dispatch(action.pipeline(composePipeline(
-                pipeBindValue(props.fs, undefined),
-                pipeSendBack((e: any) => (!!cb && cb(e))),
-            ), "init key"))
+            pipeBindValue(props.fs, undefined),
+            pipeSendBack((e: any) => (!!cb && cb(e))),
+        ), "init key"))
     }, [])
 
     const handleChange = (e: ByteFormFieldState['value']) => {
@@ -59,12 +59,14 @@ const SwitchField = (props: {
             return <DatePicker
                 onChange={e => e && handleChange(e.unix())}
                 placeholder={fs.placeholder}
+                style={props.fs.style}
                 showTime
             />
         case "input":
             return <Input
                 onChange={e => handleChange(e.target.value)}
                 value={fs.value}
+                style={props.fs.style}
                 placeholder={fs.placeholder}
             // onBlur={e => console.log("input blur", e)}
             />
@@ -81,6 +83,7 @@ const SwitchField = (props: {
                 onChange={(e: any) => handleChange(e as string)}
                 // onBlur={e => console.log("select blur", e)}
                 value={fs.value}
+                style={props.fs.style}
                 placeholder={fs.placeholder}
                 {...props}
             >
@@ -94,7 +97,7 @@ const SwitchField = (props: {
             if (ef && ef[type]) {
                 const Component = ef[type]
                 return <Component
-                    onChange={(e: any) => handleChange(e )}
+                    onChange={(e: any) => handleChange(e)}
                     value={fs.value}
                 />
             }
@@ -108,9 +111,9 @@ const WrappedField = forwardRef((props: {
     fm: AllFieldMetaUnion
     cb?: (e: any) => void
     ef?: IExtraField
-    vff?:boolean
+    vff?: boolean
 }, ref: any) => {
-    const { fm, cb, ef ,vff} = props
+    const { fm, cb, ef, vff } = props
     const dispatch = useDispatch()
     const fState = useSelector<IByteFormState, ByteFormFieldState | undefined>(e => e.fieldStore[fm.key])
     useEffect(() => {
@@ -123,15 +126,21 @@ const WrappedField = forwardRef((props: {
         return null
 
     if (!!fState) {
-        const { required, validate, helpinfo } = fState
+        const { required, validate, helpinfo, helptext } = fState
+        const label = helptext ?
+            <Tooltip title={helptext}>
+                <span>{fm.label}</span>
+                <Icon type="question-circle-o" />
+            </Tooltip> : <span>{fm.label}</span>
+
         return <Form.Item
-            label={fm.label}
+            label={label}
             key={fm.key}
-            validateStatus={validate===undefined ? 'success' :validate?'success': 'error'}
             help={helpinfo}
+            validateStatus={validate === undefined ? 'success' : validate ? 'success' : 'error'}
             required={required}
         >
-            <SwitchField fs={fState} cb={cb} ef={ef} vff={vff}/>
+            <SwitchField fs={fState} cb={cb} ef={ef} vff={vff} />
         </Form.Item>
     }
     else
@@ -153,14 +162,14 @@ interface IProps {
 interface innerProps {
     forceValidate?: boolean
     ef?: IExtraField
-    vff?:boolean
-    store:any
+    vff?: boolean
+    store: any
 
 }
 
 
 const Connector = (props: IProps & innerProps) => {
-    const { controlSchema, value, forceValidate ,vff,store} = props
+    const { controlSchema, value, forceValidate, vff, store } = props
     //I hope one day typescript can support rust-style local immutable variable shadow!
     const tControlSchema = !!controlSchema ? controlSchema : []
 
@@ -197,8 +206,8 @@ const Connector = (props: IProps & innerProps) => {
 
 const GenedForm = (props: IProps & innerProps) => {
     const metaSource = useSelector<IByteFormState, MetaCache>(e => !!e ? e.metaSource : {})
-    const { callback, ef ,vff} = props
-    const items = Object.keys(metaSource).map(e => <WrappedField fm={metaSource[e]} cb={callback} key={e} ef={ef} vff={vff}/>)
+    const { callback, ef, vff } = props
+    const items = Object.keys(metaSource).map(e => <WrappedField fm={metaSource[e]} cb={callback} key={e} ef={ef} vff={vff} />)
 
     return (
         <Form
@@ -229,28 +238,28 @@ interface IGetFormOpt {
 }
 
 
-export interface FormAction{
-    getValue:()=>{[key:string]:any},
-    getValidate:()=>{[key:string]:boolean}
-    forceValidate:()=>void
-    check:()=>boolean
+export interface FormAction {
+    getValue: () => { [key: string]: any },
+    getValidate: () => { [key: string]: boolean }
+    forceValidate: () => void
+    check: () => boolean
 }
 
-function getForm(opt: IGetFormOpt):[FormAction,(props:IProps)=>JSX.Element] {
+function getForm(opt: IGetFormOpt): [FormAction, (props: IProps) => JSX.Element] {
     let forceValidateUpdate = false
     let extraField = { ...opt.extraField }
     let vff = false
-    const store =GetStore()
-    
-    
+    const store = GetStore()
+
+
     const getValue = () => Object.entries(store.getState().fieldStore).reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1].value }), {})
     const getValidate = () => Object.entries(store.getState().fieldStore).reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1].validate }), {})
-    const forceValidate = () => store.dispatch(action.pipeline(pipeForceValidate(),"force Update"))
-    const check = ()=> Object.entries(store.getState().fieldStore).reduce((acc,cur)=>acc&&cur[1].validate,true)
+    const forceValidate = () => store.dispatch(action.pipeline(pipeForceValidate(), "force Update"))
+    const check = () => Object.entries(store.getState().fieldStore).reduce((acc, cur) => acc && cur[1].validate, true)
 
 
     return [
-        { 
+        {
             getValue,
             forceValidate,
             getValidate,
@@ -258,11 +267,11 @@ function getForm(opt: IGetFormOpt):[FormAction,(props:IProps)=>JSX.Element] {
         },
         (props: IProps) => <Connector {...props}
             forceValidate={forceValidateUpdate}
-            callback={(e) =>  props.callback&&props.callback(e) }
+            callback={(e) => props.callback && props.callback(e)}
             ef={extraField}
             vff={vff}
             store={store}
-            />
+        />
     ]
 }
 

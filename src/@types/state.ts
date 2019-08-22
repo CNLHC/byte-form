@@ -41,6 +41,7 @@ export interface ByteFormFieldState {
     helpinfo?:string
     style?:React.CSSProperties
     placeholder?:string
+    helptext?:string
 }
 
 

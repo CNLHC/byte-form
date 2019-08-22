@@ -25,7 +25,8 @@ export const pipeInit: (fm: AllFieldMetaUnion) => PiplineStage = (fm: AllFieldMe
         // validate: true,
         validators: fm.validators,
         style: fm.style,
-        placeholder: fm.placeholder
+        placeholder: fm.placeholder,
+        helptext: fm.helptext
     }
 
 
@@ -36,13 +37,17 @@ export const pipeInit: (fm: AllFieldMetaUnion) => PiplineStage = (fm: AllFieldMe
 
 const validatorStage: (va: IValidator, key: string) => PiplineStage = (va, key) => (e) => {
 
-    e.fieldStore[key].validate = true;
+    const curstate = e.fieldStore[key].validate ;
+    if(curstate===false)
+        return e
+    if(curstate==undefined)
+        e.fieldStore[key].validate = true;
     e.fieldStore[key].helpinfo = undefined;
     const value = e.fieldStore[key].value
     let validateStatus = true;
     const normalizedValue = (typeof (value) === 'string') ?
         value : (typeof (value) === 'object' && va.type === 'regex' && va.stringKey && value[va.stringKey]) ?
-            value[va.stringKey] : (!!value && !!value.toString) ?
+            value[va.stringKey] : (value!==undefined&&value!==null && !!value.toString) ?
                 value.toString() : ''
 
 
@@ -80,6 +85,8 @@ const validatorStage: (va: IValidator, key: string) => PiplineStage = (va, key) 
 }
 
 export const pipeValidators: (fs: ByteFormFieldState) => PiplineStage = (fs) => (e) => {
+    e.fieldStore[fs.key].validate = true;
+    e.fieldStore[fs.key].helpinfo = undefined;
     const validators = !!fs.validators ? fs.validators : []
     validators.map(v => validatorStage(v, fs.key)(e))
     return e
