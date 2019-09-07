@@ -178,9 +178,15 @@ export const pipeSetValue:(value?:{ [key: string]: any })=>PiplineStage=(value)=
         if(e.fieldStore[k]&&v){
             e.fieldStore[k].value=v
         }
-        
     })
+    return e
+}
 
+export const pipeCleanValue:()=>PiplineStage=()=>(e)=>{
+    Object.keys(e.fieldStore).forEach(k=>{
+        if(e.fieldStore[k])
+            e.fieldStore[k].value=undefined
+    })
     return e
 }
 

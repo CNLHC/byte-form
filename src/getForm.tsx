@@ -1,7 +1,7 @@
 import { GetStore, action } from "./models";
 import { IExtraField } from "./@types/extraField";
 import { IConnectorProps, Connector } from "./genForm";
-import { pipeForceValidate, pipeSetValue } from "./stage";
+import { pipeForceValidate, pipeSetValue, pipeCleanValue } from "./stage";
 import React from "react";
 
 interface IGetFormOpt {
@@ -14,6 +14,7 @@ export interface FormAction {
     getValidate: () => { [key: string]: boolean }
     forceValidate: () => void
     check: () => boolean
+    cleanValue: () => void
 }
 
 function getForm(opt: IGetFormOpt): [FormAction, (props: IConnectorProps) => JSX.Element] {
@@ -40,6 +41,9 @@ function getForm(opt: IGetFormOpt): [FormAction, (props: IConnectorProps) => JSX
     const setValue = (value: { [key: string]: any }) =>
         store.dispatch(action.pipeline(pipeSetValue(value)))
 
+    const cleanValue = () =>
+        store.dispatch(action.pipeline(pipeCleanValue()))
+
 
     return [
         {
@@ -47,6 +51,7 @@ function getForm(opt: IGetFormOpt): [FormAction, (props: IConnectorProps) => JSX
             forceValidate,
             getValidate,
             setValue,
+            cleanValue,
             check,
         },
         (props) => <Connector {...props}
