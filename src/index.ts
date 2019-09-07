@@ -1,4 +1,5 @@
-import {SwitchForm,GenForm,getForm}from './genForm'
+import {GenForm}from './genForm'
+import getForm from './getForm'
 
 
-export {GenForm,SwitchForm,getForm}
+export {GenForm, getForm }

@@ -96,9 +96,7 @@ export const pipeForceValidate: () => PiplineStage = () => (e) => {
     Object.entries(e.fieldStore).map(([key, fs]) => fs.validators ?
      fs.validators.map(v => validatorStage(v, key)(e)) :
       (() => e.fieldStore[key].validate = true)())
-
     return e
-
 }
 
 export const pipeSendBack: (cb: (e: any) => void) => PiplineStage = (cb: (e: any) => void) => (e) => {
@@ -174,6 +172,17 @@ export const pipeBindToExternal: (fms: FieldMetaList, value?: { [key: string]: a
     return e;
 }
 
+
+export const pipeSetValue:(value?:{ [key: string]: any })=>PiplineStage=(value)=>(e)=>{
+    value&&Object.entries(value).forEach(([k,v])=>{
+        if(e.fieldStore[k]&&v){
+            e.fieldStore[k].value=v
+        }
+        
+    })
+
+    return e
+}
 
 export const composePipeline = (...pipes: PiplineStage[]) =>
     pipes.reduce((a, c) => (e) => c(a(e)), UnitPipe)
