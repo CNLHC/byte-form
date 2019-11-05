@@ -1,10 +1,10 @@
-import React, { useEffect, forwardRef, useState } from 'react'
+import React, { useEffect, forwardRef,useReducer,useContext} from 'react'
+import {reducer ,initState, TByteFormReducer} from './models'
 import { Form, Input, InputNumber, Select, DatePicker, Tooltip, Icon } from 'antd';
-import { Provider, useDispatch, useSelector } from 'react-redux'
-import { GetStore, action, } from './models'
+import { action,ByteFormCtx } from './models'
 import { composePipeline, pipeInit, pipeValidators, pipeBindValue, pipeSendBack, pipeMutation, pipeRefreshMetaCache, pipeBindToExternal } from './stage';
 import { ColProps } from 'antd/lib/col';
-import { ByteFormFieldState, IByteFormState, MetaCache } from './@types/state';
+import { ByteFormFieldState} from './@types/state';
 import { IMetaFieldSelect } from './@types/fields';
 import { AllFieldMetaUnion, FieldMetaList, IControlSchema } from './@types/schema';
 import { IExtraField } from './@types/extraField';
@@ -20,7 +20,7 @@ const SwitchField = (props: {
 }) => {
     const { cb, fs, ef } = props
     const { type, preset } = fs
-    const dispatch = useDispatch()
+    const {dispatch} =  useContext(ByteFormCtx)
 
     useEffect(() => {
         dispatch(action.pipeline(composePipeline(
@@ -97,8 +97,8 @@ const WrappedField = forwardRef((props: {
     vff?: boolean
 }) => {
     const { fm, cb, ef, vff } = props
-    const dispatch = useDispatch()
-    const fState = useSelector<IByteFormState, ByteFormFieldState | undefined>(e => e.fieldStore[fm.key])
+    const {dispatch,state} = useContext(ByteFormCtx)
+    const fState = state.fieldStore[fm.key]
     useEffect(() => {
         dispatch(
             action.pipeline(composePipeline(pipeInit(fm),
@@ -132,6 +132,7 @@ const WrappedField = forwardRef((props: {
 
 
 export interface IConnectorProps {
+
     formMeta: FieldMetaList
     value?: { [key: string]: any }
     controlSchema?: IControlSchema
@@ -144,12 +145,13 @@ export interface IConnectorProps {
 
 interface innerProps {
     ef?: IExtraField
-    store: any
 }
 
 
 const GenedForm = (props: IConnectorProps & innerProps) => {
-    const metaSource = useSelector<IByteFormState, MetaCache>(e => !!e ? e.metaSource : {})
+
+    const {state} = useContext(ByteFormCtx)
+    const metaSource =  state.metaSource
     const { callback, ef } = props
     const items = Object.keys(metaSource).map(e => {
         return <WrappedField
@@ -172,12 +174,14 @@ const GenedForm = (props: IConnectorProps & innerProps) => {
 }
 
 export const Connector = (props: IConnectorProps & innerProps) => {
-    const { controlSchema, value, store } = props
+    const { controlSchema, value } = props
+    const [state, dispatch] = useReducer <TByteFormReducer>(reducer ,initState );
+
     //I hope one day typescript can support rust-style local immutable variable shadow!
     const tControlSchema = !!controlSchema ? controlSchema : []
 
     useEffect(() => {
-        store.dispatch(action.setState({
+        dispatch(action.setState({
             metaSource: props.formMeta
                 .map(e => ({ [e.key]: e }))
                 .reduce((acc, cur) => Object.assign(acc, { ...cur }), {})
@@ -187,25 +191,25 @@ export const Connector = (props: IConnectorProps & innerProps) => {
 
 
     useEffect(() => {
-        store.dispatch(action.pipeline(pipeRefreshMetaCache(props.formMeta), "refresh meta cache"));
+        dispatch(action.pipeline(pipeRefreshMetaCache(props.formMeta), "refresh meta cache"));
         return
     }, [props.formMeta])
 
     useEffect(() => {
-        store.dispatch(action.setState({
+        dispatch(action.setState({
             controlSchemaCache: tControlSchema
         }));
         return
     }, [tControlSchema])
 
     useEffect(() => {
-        store.dispatch(action.pipeline(pipeBindToExternal(props.formMeta, value), "bind To external"))
+        dispatch(action.pipeline(pipeBindToExternal(props.formMeta, value), "bind To external"))
     }, [value])
 
     return (
-        <Provider store={store}>
+        <ByteFormCtx.Provider value={{state,dispatch}}>
             <GenedForm {...props} />
-        </Provider>
+        </ByteFormCtx.Provider>
     )
 }
 

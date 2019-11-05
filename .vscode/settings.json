@@ -1,0 +1,12 @@
+{
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "cSpell.words": [
+        "CNLHC",
+        "antd",
+        "devtools",
+        "helpinfo",
+        "helptext",
+        "immer",
+        "microbundle"
+    ]
+}

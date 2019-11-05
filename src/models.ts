@@ -1,7 +1,7 @@
-import { createStore, Reducer, applyMiddleware, Store } from "redux";
 import { produce } from "immer";
-import { composeWithDevTools } from "redux-devtools-extension";
-import logger from "redux-logger";
+// import { composeWithDevTools } from "redux-devtools-extension";
+// import logger from "redux-logger";
+import React,{Dispatch,Reducer} from 'react'
 import {
   IByteFormState,
   TFieldStore,
@@ -10,7 +10,7 @@ import {
 } from "./@types/state";
 import { PiplineStages } from "./@types/stage";
 
-const initState: IByteFormState = {
+export const initState: IByteFormState = {
   fieldStore: {} as TFieldStore,
   metaSource: {} as MetaSource,
   metaCache: {} as MetaCache,
@@ -18,7 +18,7 @@ const initState: IByteFormState = {
   bindToExternal: false
 };
 
-const reducer: Reducer<IByteFormState, ByteFormActionType> = (state, action) =>
+export const reducer= (state:any, action:any) =>
   produce<IByteFormState | undefined, IByteFormState>(state, draft => {
     if (!!draft)
       switch (action.type) {
@@ -56,17 +56,15 @@ export const action = {
   })
 };
 
-type ByteFormActionType =
+export type TByteFormActionType =
   | ReturnType<typeof action.setState>
   | ReturnType<typeof action.pipeline>;
 
-const GetStore: () => Store<IByteFormState, ByteFormActionType> = () =>
-  createStore<IByteFormState, ByteFormActionType, any, any>(
-    reducer,
-    initState,
-    process.env.NODE_ENV === "production"
-      ? undefined
-      : composeWithDevTools(applyMiddleware(logger))
-  );
+export type TByteFormReducer = Reducer<IByteFormState,TByteFormActionType>
 
-export { GetStore };
+interface IByteFormCtx  {
+    state:IByteFormState,
+    dispatch: Dispatch<TByteFormActionType>
+}
+
+export const ByteFormCtx =  React.createContext<IByteFormCtx>({} as IByteFormCtx)

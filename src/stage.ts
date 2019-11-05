@@ -65,7 +65,7 @@ const validatorStage: (va: IValidator, key: string) => PiplineStage = (va, key) 
             e.fieldStore[key].validate = e.fieldStore[key].validate && validateStatus
             break;
         case "compare":
-            switch (va.op) {
+            switch (va.op){
                 case "eq": validateStatus = value == va.value; break;
                 case "lt": validateStatus = !!value ? (value < va.value) : true; break;
                 case "lte": validateStatus = !!value ? (value <= va.value) : true; break;
