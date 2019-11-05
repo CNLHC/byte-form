@@ -2,3 +2,4 @@ node_modules/
 *.lock
 .rts2*/
 dist/
+__snapshots__/
