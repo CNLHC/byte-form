@@ -10,6 +10,18 @@ import {
 } from "./@types/state";
 import { PiplineStages } from "./@types/stage";
 
+export type TByteFormActionType =
+  | ReturnType<typeof action.setState>
+  | ReturnType<typeof action.pipeline>;
+
+export type TByteFormReducer = Reducer<IByteFormState,TByteFormActionType>
+
+interface IByteFormCtx  {
+    state:IByteFormState,
+    dispatch: Dispatch<TByteFormActionType>
+}
+
+
 export const initState: IByteFormState = {
   fieldStore: {} as TFieldStore,
   metaSource: {} as MetaSource,
@@ -18,8 +30,8 @@ export const initState: IByteFormState = {
   bindToExternal: false
 };
 
-export const reducer= (state:any, action:any) =>
-  produce<IByteFormState | undefined, IByteFormState>(state, draft => {
+export const reducer:Reducer<IByteFormState,TByteFormActionType> = (state, action) =>
+  produce(state, draft => {
     if (!!draft)
       switch (action.type) {
         case "setState":
@@ -55,16 +67,5 @@ export const action = {
     pipName
   })
 };
-
-export type TByteFormActionType =
-  | ReturnType<typeof action.setState>
-  | ReturnType<typeof action.pipeline>;
-
-export type TByteFormReducer = Reducer<IByteFormState,TByteFormActionType>
-
-interface IByteFormCtx  {
-    state:IByteFormState,
-    dispatch: Dispatch<TByteFormActionType>
-}
 
 export const ByteFormCtx =  React.createContext<IByteFormCtx>({} as IByteFormCtx)
