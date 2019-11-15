@@ -1,6 +1,7 @@
 import { IExtraField } from './@types/extraField';
-import { IConnectorProps, Connector } from './genForm';
+import { IConnectorProps, GetConnector } from './connector';
 import React from 'react';
+import { IByteFormCtx } from './models';
 
 interface IGetFormOpt {
     extraField?: IExtraField;
@@ -15,7 +16,9 @@ export interface FormAction {
     cleanValue: () => void;
 }
 
-function getForm(opt: IGetFormOpt): [any, (props: IConnectorProps) => JSX.Element] {
+function useForm(
+    opt: IGetFormOpt,
+): [any, (props: IConnectorProps) => JSX.Element] {
     let extraField = { ...opt.extraField };
     // const getValue = () =>
     //     Object.entries(store.getState().fieldStore)
@@ -37,7 +40,18 @@ function getForm(opt: IGetFormOpt): [any, (props: IConnectorProps) => JSX.Elemen
 
     // const cleanValue = () =>
     // store.dispatch(action.pipeline(pipeCleanValue()))
+    const ByteFormCtx = React.createContext<IByteFormCtx>({} as IByteFormCtx);
+    const Connector = GetConnector(ByteFormCtx);
 
-    return [{}, props => <Connector {...props} callback={e => props.callback && props.callback(e)} ef={extraField} />];
+    return [
+        {},
+        props => (
+            <Connector
+                {...props}
+                callback={e => props.callback && props.callback(e)}
+                ef={extraField}
+            />
+        ),
+    ];
 }
-export default getForm;
+export default useForm;

@@ -22,9 +22,12 @@ interface IValidatorTemplate extends IBaseValidator {
     name: 'required';
 }
 
-export type IValidator = IValidatorCompare | IValidatorRegex | IValidatorTemplate;
+export type IValidator =
+    | IValidatorCompare
+    | IValidatorRegex
+    | IValidatorTemplate;
 
-interface FieldMeta<T extends GenricFieldBase> {
+export interface FieldMeta<T extends GenricFieldBase> {
     //Required Field
     key: string;
     type: T['typename'] | string;

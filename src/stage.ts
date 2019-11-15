@@ -4,13 +4,21 @@ import { ByteFormFieldState, MetaCache, IByteFormState } from './@types/state';
 
 const UnitPipe: PiplineStage = e => e;
 
-export const pipeInitAllfield: (fm: AllFieldMetaUnion) => PiplineStage = fm => e => {
+export const pipeInitAllfield: (
+    fm: AllFieldMetaUnion,
+) => PiplineStage = fm => e => {
     return e;
 };
-export const pipeInit: (fm: AllFieldMetaUnion) => PiplineStage = (fm: AllFieldMetaUnion) => e => {
+export const pipeInit: (fm: AllFieldMetaUnion) => PiplineStage = (
+    fm: AllFieldMetaUnion,
+) => e => {
     if (!!e.fieldStore[fm.key]) {
-        if (e.fieldStore[fm.key].type !== fm.type) e.fieldStore[fm.key].value = undefined;
-        if (JSON.stringify(e.fieldStore[fm.key].preset) !== JSON.stringify(fm.preset)) {
+        if (e.fieldStore[fm.key].type !== fm.type)
+            e.fieldStore[fm.key].value = undefined;
+        if (
+            JSON.stringify(e.fieldStore[fm.key].preset) !==
+            JSON.stringify(fm.preset)
+        ) {
             e.fieldStore[fm.key].value = undefined;
         }
     }
@@ -27,12 +35,20 @@ export const pipeInit: (fm: AllFieldMetaUnion) => PiplineStage = (fm: AllFieldMe
         helptext: fm.helptext,
     };
 
-    if (!!fm.validators && fm.validators.findIndex(e => e.type === 'template' && e.name === 'required') !== -1)
+    if (
+        !!fm.validators &&
+        fm.validators.findIndex(
+            e => e.type === 'template' && e.name === 'required',
+        ) !== -1
+    )
         e.fieldStore[fm.key].required = true;
     return e;
 };
 
-const validatorStage: (va: IValidator, key: string) => PiplineStage = (va, key) => e => {
+const validatorStage: (va: IValidator, key: string) => PiplineStage = (
+    va,
+    key,
+) => e => {
     const curstate = e.fieldStore[key].validate;
     if (curstate === false) return e;
     if (curstate == undefined) e.fieldStore[key].validate = true;
@@ -42,7 +58,10 @@ const validatorStage: (va: IValidator, key: string) => PiplineStage = (va, key) 
     const normalizedValue =
         typeof value === 'string'
             ? value
-            : typeof value === 'object' && va.type === 'regex' && va.stringKey && value[va.stringKey]
+            : typeof value === 'object' &&
+              va.type === 'regex' &&
+              va.stringKey &&
+              value[va.stringKey]
             ? value[va.stringKey]
             : value !== undefined && value !== null && !!value.toString
             ? value.toString()
@@ -52,14 +71,22 @@ const validatorStage: (va: IValidator, key: string) => PiplineStage = (va, key) 
         case 'template':
             //need more complex getter function here
             const templateReg = va.name === 'required' ? /^.+$/ : undefined;
-            validateStatus = templateReg ? templateReg.exec(normalizedValue) !== null : true;
-            if (!validateStatus) e.fieldStore[key].helpinfo = va.message ? va.message : '该项为必填项';
-            e.fieldStore[key].validate = e.fieldStore[key].validate && validateStatus;
+            validateStatus = templateReg
+                ? templateReg.exec(normalizedValue) !== null
+                : true;
+            if (!validateStatus)
+                e.fieldStore[key].helpinfo = va.message
+                    ? va.message
+                    : '该项为必填项';
+            e.fieldStore[key].validate =
+                e.fieldStore[key].validate && validateStatus;
             break;
         case 'regex':
-            const regObj = typeof va.regex === 'string' ? new RegExp(va.regex) : va.regex;
+            const regObj =
+                typeof va.regex === 'string' ? new RegExp(va.regex) : va.regex;
             validateStatus = regObj.exec(normalizedValue) !== null;
-            e.fieldStore[key].validate = e.fieldStore[key].validate && validateStatus;
+            e.fieldStore[key].validate =
+                e.fieldStore[key].validate && validateStatus;
             break;
         case 'compare':
             switch (va.op) {
@@ -79,18 +106,22 @@ const validatorStage: (va: IValidator, key: string) => PiplineStage = (va, key) 
                     validateStatus = !!value ? value >= va.value : true;
                     break;
             }
-            e.fieldStore[key].validate = e.fieldStore[key].validate && validateStatus;
+            e.fieldStore[key].validate =
+                e.fieldStore[key].validate && validateStatus;
             break;
         default:
             break;
     }
 
-    if (!e.fieldStore[key].validate && !e.fieldStore[key].helpinfo) e.fieldStore[key].helpinfo = va.message;
+    if (!e.fieldStore[key].validate && !e.fieldStore[key].helpinfo)
+        e.fieldStore[key].helpinfo = va.message;
 
     return e;
 };
 
-export const pipeValidators: (fs: ByteFormFieldState) => PiplineStage = fs => e => {
+export const pipeValidators: (
+    fs: ByteFormFieldState,
+) => PiplineStage = fs => e => {
     e.fieldStore[fs.key].validate = true;
     e.fieldStore[fs.key].helpinfo = undefined;
     const validators = !!fs.validators ? fs.validators : [];
@@ -107,7 +138,9 @@ export const pipeForceValidate: () => PiplineStage = () => e => {
     return e;
 };
 
-export const pipeSendBack: (cb: (e: any) => void) => PiplineStage = (cb: (e: any) => void) => e => {
+export const pipeSendBack: (cb: (e: any) => void) => PiplineStage = (
+    cb: (e: any) => void,
+) => e => {
     cb(
         Object.keys(e.fieldStore).reduce(
             (acc, cur) => ({
@@ -123,7 +156,9 @@ export const pipeSendBack: (cb: (e: any) => void) => PiplineStage = (cb: (e: any
     return e;
 };
 
-export const pipeMutation: (fs: ByteFormFieldState) => PiplineStage = fs => e => {
+export const pipeMutation: (
+    fs: ByteFormFieldState,
+) => PiplineStage = fs => e => {
     const schemas = e.controlSchemaCache;
     for (const schema of schemas)
         if (!!schema) {
@@ -131,7 +166,10 @@ export const pipeMutation: (fs: ByteFormFieldState) => PiplineStage = fs => e =>
             try {
                 //TODO:will add lexer to implement a DSL so that we can support more complex detail in later version
                 shouldFieldMutated = eval(
-                    schema.condition.replace(new RegExp(`{{(.*?)}}`, 'g'), `(e.fieldStore[fs.key].value)`),
+                    schema.condition.replace(
+                        new RegExp(`{{(.*?)}}`, 'g'),
+                        `(e.fieldStore[fs.key].value)`,
+                    ),
                 );
                 const keysMutated = schema.mutation.map(e => e.key);
                 if (shouldFieldMutated)
@@ -149,16 +187,20 @@ export const pipeMutation: (fs: ByteFormFieldState) => PiplineStage = fs => e =>
     return e;
 };
 
-export const pipeBindValue: (fs: ByteFormFieldState, value: ByteFormFieldState['value']) => PiplineStage = (
-    fs,
-    value,
-) => e => {
+export const pipeBindValue: (
+    fs: ByteFormFieldState,
+    value: ByteFormFieldState['value'],
+) => PiplineStage = (fs, value) => e => {
     if (!e.bindToExternal) e.fieldStore[fs.key].value = value;
     return e;
 };
 
-export const pipeRefreshMetaCache: (fms: FieldMetaList) => PiplineStage = fms => e => {
-    const newMeta = fms.map(e => ({ [e.key]: e })).reduce((acc, cur) => Object.assign(acc, { ...cur }), {});
+export const pipeRefreshMetaCache: (
+    fms: FieldMetaList,
+) => PiplineStage = fms => e => {
+    const newMeta = fms
+        .map(e => ({ [e.key]: e }))
+        .reduce((acc, cur) => Object.assign(acc, { ...cur }), {});
     const newKeys = fms.map(e => e.key);
 
     e.metaCache = newMeta;
@@ -170,10 +212,10 @@ export const pipeRefreshMetaCache: (fms: FieldMetaList) => PiplineStage = fms =>
     return e;
 };
 
-export const pipeBindToExternal: (fms: FieldMetaList, value?: { [key: string]: any }) => PiplineStage = (
-    fms,
-    value,
-) => e => {
+export const pipeBindToExternal: (
+    fms: FieldMetaList,
+    value?: { [key: string]: any },
+) => PiplineStage = (fms, value) => e => {
     if (!value) {
         e.bindToExternal = false;
         return e;
@@ -192,7 +234,9 @@ export const pipeBindToExternal: (fms: FieldMetaList, value?: { [key: string]: a
     return e;
 };
 
-export const pipeSetValue: (value?: { [key: string]: any }) => PiplineStage = value => e => {
+export const pipeSetValue: (value?: {
+    [key: string]: any;
+}) => PiplineStage = value => e => {
     value &&
         Object.entries(value).forEach(([k, v]) => {
             if (e.fieldStore[k] && v) {
@@ -209,4 +253,5 @@ export const pipeCleanValue: () => PiplineStage = () => e => {
     return e;
 };
 
-export const composePipeline = (...pipes: PiplineStage[]) => pipes.reduce((a, c) => e => c(a(e)), UnitPipe);
+export const composePipeline = (...pipes: PiplineStage[]) =>
+    pipes.reduce((a, c) => e => c(a(e)), UnitPipe);

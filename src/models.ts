@@ -2,14 +2,21 @@ import { produce } from 'immer';
 // import { composeWithDevTools } from "redux-devtools-extension";
 // import logger from "redux-logger";
 import React, { Dispatch, Reducer } from 'react';
-import { IByteFormState, TFieldStore, MetaCache, MetaSource } from './@types/state';
+import {
+    IByteFormState,
+    TFieldStore,
+    MetaCache,
+    MetaSource,
+} from './@types/state';
 import { PiplineStages } from './@types/stage';
 
-export type TByteFormActionType = ReturnType<typeof action.setState> | ReturnType<typeof action.pipeline>;
+export type TByteFormActionType =
+    | ReturnType<typeof action.setState>
+    | ReturnType<typeof action.pipeline>;
 
 export type TByteFormReducer = Reducer<IByteFormState, TByteFormActionType>;
 
-interface IByteFormCtx {
+export interface IByteFormCtx {
     state: IByteFormState;
     dispatch: Dispatch<TByteFormActionType>;
 }
@@ -22,17 +29,33 @@ export const initState: IByteFormState = {
     bindToExternal: false,
 };
 
-export const reducer: Reducer<IByteFormState, TByteFormActionType> = (state, action) =>
+export const reducer: Reducer<IByteFormState, TByteFormActionType> = (
+    state,
+    action,
+) =>
     produce(state, draft => {
         if (!!draft)
             switch (action.type) {
                 case 'setState':
                     draft = {
                         ...draft,
-                        fieldStore: { ...draft.fieldStore, ...action.ps.fieldStore },
-                        metaSource: { ...draft.metaSource, ...action.ps.metaSource },
-                        metaCache: { ...draft.metaCache, ...action.ps.metaCache },
-                        controlSchemaCache: [...(!!action.ps.controlSchemaCache ? action.ps.controlSchemaCache : [])],
+                        fieldStore: {
+                            ...draft.fieldStore,
+                            ...action.ps.fieldStore,
+                        },
+                        metaSource: {
+                            ...draft.metaSource,
+                            ...action.ps.metaSource,
+                        },
+                        metaCache: {
+                            ...draft.metaCache,
+                            ...action.ps.metaCache,
+                        },
+                        controlSchemaCache: [
+                            ...(!!action.ps.controlSchemaCache
+                                ? action.ps.controlSchemaCache
+                                : []),
+                        ],
                     };
                     break;
                 case 'pipeline':
@@ -55,5 +78,3 @@ export const action = {
         pipName,
     }),
 };
-
-export const ByteFormCtx = React.createContext<IByteFormCtx>({} as IByteFormCtx);

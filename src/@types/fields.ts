@@ -26,4 +26,8 @@ export interface IMetaFieldNumber extends MetaFieldBase {
     preset?: number;
 }
 
-export type GenricFieldBase = IMetaFieldDatetime | IMetaFieldNumber | IMetaFieldSelect | IMetaFieldInput;
+export type GenricFieldBase =
+    | IMetaFieldDatetime
+    | IMetaFieldNumber
+    | IMetaFieldSelect
+    | IMetaFieldInput;
