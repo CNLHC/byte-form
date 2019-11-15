@@ -1,7 +1,7 @@
 import { produce } from "immer";
 // import { composeWithDevTools } from "redux-devtools-extension";
 // import logger from "redux-logger";
-import React,{Dispatch,Reducer} from 'react'
+import React, { Dispatch, Reducer } from "react";
 import {
   IByteFormState,
   TFieldStore,
@@ -14,13 +14,12 @@ export type TByteFormActionType =
   | ReturnType<typeof action.setState>
   | ReturnType<typeof action.pipeline>;
 
-export type TByteFormReducer = Reducer<IByteFormState,TByteFormActionType>
+export type TByteFormReducer = Reducer<IByteFormState, TByteFormActionType>;
 
-interface IByteFormCtx  {
-    state:IByteFormState,
-    dispatch: Dispatch<TByteFormActionType>
+interface IByteFormCtx {
+  state: IByteFormState;
+  dispatch: Dispatch<TByteFormActionType>;
 }
-
 
 export const initState: IByteFormState = {
   fieldStore: {} as TFieldStore,
@@ -30,7 +29,10 @@ export const initState: IByteFormState = {
   bindToExternal: false
 };
 
-export const reducer:Reducer<IByteFormState,TByteFormActionType> = (state, action) =>
+export const reducer: Reducer<IByteFormState, TByteFormActionType> = (
+  state,
+  action
+) =>
   produce(state, draft => {
     if (!!draft)
       switch (action.type) {
@@ -68,4 +70,6 @@ export const action = {
   })
 };
 
-export const ByteFormCtx =  React.createContext<IByteFormCtx>({} as IByteFormCtx)
+export const ByteFormCtx = React.createContext<IByteFormCtx>(
+  {} as IByteFormCtx
+);

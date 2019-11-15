@@ -46,6 +46,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "yarn run microbundle --watch --external=react,react-redux",
-    "test": "jest"
+    "test": "jest",
+    "format": "prettier --write \"{,!(node_modules)/**/}*.{ts,tsx}\""
   }
 }
