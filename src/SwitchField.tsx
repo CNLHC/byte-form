@@ -12,37 +12,27 @@ import {
 import React from 'react';
 import { Input, InputNumber, Select, DatePicker } from 'antd';
 import { IMetaFieldSelect } from './@types/fields';
+import { AllFieldMetaUnion } from './@types/schema';
 
 const GetSwitchField = (FormCtx: React.Context<IByteFormCtx>) => (props: {
-    fs: ByteFormFieldState;
-    cb?: (e: any) => void;
-    ef?: IExtraField;
-    vff?: boolean;
+    fm: AllFieldMetaUnion;
 }) => {
-    const { cb, fs, ef } = props;
+    const { dispatch, state } = useContext(FormCtx);
+    const { fm } = props;
+    const ffstate = () => state.fieldStore[fm.key];
+    const fs = ffstate();
+    if (fs === undefined) return null;
     const { type, preset } = fs;
-    const { dispatch } = useContext(FormCtx);
-    useEffect(() => {
-        dispatch(
-            action.pipeline(
-                composePipeline(
-                    pipeBindValue(props.fs, undefined),
-                    pipeSendBack((e: any) => !!cb && cb(e)),
-                ),
-                'init key',
-            ),
-        );
-    }, []);
 
     const handleChange = (e: ByteFormFieldState['value']) => {
         dispatch(
             action.pipeline(
-                composePipeline(
-                    pipeBindValue(props.fs, e),
-                    pipeValidators(props.fs),
-                    pipeSendBack((e: any) => !!cb && cb(e)),
-                    pipeMutation(props.fs),
-                ),
+                pipeBindValue(fs, e),
+                // composePipeline(
+                //     pipeValidators(fs),
+                //     // pipeSendBack((e: any) => !!cb && cb(e)),
+                //     pipeMutation(fs),
+                // ),
                 `handle change of ${fs.key}`,
             ),
         );
@@ -54,16 +44,18 @@ const GetSwitchField = (FormCtx: React.Context<IByteFormCtx>) => (props: {
                 <DatePicker
                     onChange={e => e && handleChange(e.unix())}
                     placeholder={fs.placeholder}
-                    style={props.fs.style}
+                    style={fs.style}
                     showTime
                 />
             );
         case 'input':
             return (
                 <Input
-                    onChange={e => handleChange(e.target.value)}
+                    onChange={e => {
+                        handleChange(e.target.value);
+                    }}
                     value={fs.value}
-                    style={props.fs.style}
+                    style={fs.style}
                     placeholder={fs.placeholder}
                 />
             );
@@ -72,7 +64,7 @@ const GetSwitchField = (FormCtx: React.Context<IByteFormCtx>) => (props: {
                 <InputNumber
                     onChange={e => handleChange(e as number)}
                     value={fs.value as number}
-                    style={props.fs.style}
+                    style={fs.style}
                     placeholder={fs.placeholder}
                 />
             );
@@ -81,7 +73,7 @@ const GetSwitchField = (FormCtx: React.Context<IByteFormCtx>) => (props: {
                 <Select
                     onChange={(e: any) => handleChange(e as string)}
                     value={fs.value}
-                    style={props.fs.style}
+                    style={fs.style}
                     placeholder={fs.placeholder}
                     {...props}
                 >
@@ -97,15 +89,15 @@ const GetSwitchField = (FormCtx: React.Context<IByteFormCtx>) => (props: {
                 </Select>
             );
         default:
-            if (ef && ef[type]) {
-                const Component = ef[type];
-                return (
-                    <Component
-                        onChange={(e: any) => handleChange(e)}
-                        value={fs.value}
-                    />
-                );
-            }
+            // if (ef && ef[type]) {
+            //     const Component = ef[type];
+            //     return (
+            //         <Component
+            //             onChange={(e: any) => handleChange(e)}
+            //             value={fs.value}
+            //         />
+            //     );
+            // }
             return null;
     }
 };
