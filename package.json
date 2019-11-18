@@ -8,6 +8,7 @@
   "private": false,
   "dependencies": {
     "immer": "^5.0.0",
+    "terser-webpack-plugin": "^2.2.1",
     "ts-jest": "^24.1.0"
   },
   "devDependencies": {
@@ -36,7 +37,8 @@
     "tslint": "^5.18.0",
     "typescript": "3.7.0-beta",
     "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
+    "webpack-cli": "^3.3.10",
+    "webpack-merge": "^4.2.2"
   },
   "peerDependencies": {
     "antd": "^3.25.0",
@@ -47,8 +49,9 @@
   "main": "dist/byte-form.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "yarn run microbundle --watch --external=react,react-redux",
+    "dev": "webpack --watch --config webpack.dev.js",
     "test": "jest",
+    "build": "webpack --config webpack.prod.js",
     "format": "prettier --write \"{,!(node_modules)/**/}*.{ts,tsx}\""
   },
   "husky": {

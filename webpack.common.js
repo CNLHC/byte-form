@@ -4,10 +4,7 @@ module.exports = {
     entry: {
         bundle: './src/byte-form.ts',
     },
-    devtool: 'inline-source-map',
-    resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
-    },
+    resolve: { extensions: ['.tsx', '.ts', '.js'], },
     output: {
         filename: 'byte-form.js',
         path: path.resolve(__dirname, 'dist'),
