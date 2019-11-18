@@ -34,36 +34,35 @@ export const reducer: Reducer<IByteFormState, TByteFormActionType> = (
     action,
 ) =>
     produce(state, draft => {
-        if (!!draft)
-            switch (action.type) {
-                case 'setState':
-                    draft = {
-                        ...draft,
-                        fieldStore: {
-                            ...draft.fieldStore,
-                            ...action.ps.fieldStore,
-                        },
-                        metaSource: {
-                            ...draft.metaSource,
-                            ...action.ps.metaSource,
-                        },
-                        metaCache: {
-                            ...draft.metaCache,
-                            ...action.ps.metaCache,
-                        },
-                        controlSchemaCache: [
-                            ...(!!action.ps.controlSchemaCache
-                                ? action.ps.controlSchemaCache
-                                : []),
-                        ],
-                    };
-                    break;
-                case 'pipeline':
-                    draft = action.pip(draft);
-                    break;
-                default:
-                    return;
-            }
+        switch (action.type) {
+            case 'setState':
+                draft = {
+                    ...draft,
+                    fieldStore: {
+                        ...draft.fieldStore,
+                        ...action.ps.fieldStore,
+                    },
+                    metaSource: {
+                        ...draft.metaSource,
+                        ...action.ps.metaSource,
+                    },
+                    metaCache: {
+                        ...draft.metaCache,
+                        ...action.ps.metaCache,
+                    },
+                    controlSchemaCache: [
+                        ...(!!action.ps.controlSchemaCache
+                            ? action.ps.controlSchemaCache
+                            : []),
+                    ],
+                };
+                break;
+            case 'pipeline':
+                draft = action.pip(draft);
+                break;
+            default:
+                return;
+        }
         return draft;
     }) as IByteFormState;
 
@@ -77,4 +76,23 @@ export const action = {
         pip,
         pipName,
     }),
+};
+
+type TStateDual = [IByteFormState, Dispatch<TByteFormActionType>];
+
+export let _globalState: Map<string, () => TStateDual> = new Map();
+
+export const registerState = (id: string, getter: () => TStateDual) =>
+    _globalState.set(id, getter);
+
+export const getState = (id: string) => {
+    const method = _globalState.get(id);
+    if (method) return method()[0];
+    else return initState;
+};
+
+export const getDispatch = (id: string) => {
+    const method = _globalState.get(id);
+    if (method) return method()[1];
+    else return (value: TByteFormActionType) => {};
 };
