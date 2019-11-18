@@ -34,13 +34,14 @@
     "source-map-loader": "^0.2.4",
     "ts-loader": "^6.0.4",
     "tslint": "^5.18.0",
-    "typescript": "3.7.0-beta"
+    "typescript": "3.7.0-beta",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   },
   "peerDependencies": {
     "antd": "^3.25.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0"
-
   },
   "module": "dist/byte-form.m.js",
   "main": "dist/byte-form.js",
