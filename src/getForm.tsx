@@ -1,57 +1,48 @@
 import { IExtraField } from './@types/extraField';
 import { IConnectorProps, GetConnector } from './connector';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { IByteFormCtx } from './models';
+import { TFormAction, getFormAction } from './formAction';
 
 interface IGetFormOpt {
     extraField?: IExtraField;
 }
 
-export interface FormAction {
-    setValue: (value: { [key: string]: any }) => void;
-    getValue: () => { [key: string]: any };
-    getValidate: () => { [key: string]: boolean };
-    forceValidate: () => void;
-    check: () => boolean;
-    cleanValue: () => void;
-}
-
-function useForm(
+const getFormHOC: (
     opt: IGetFormOpt,
-): [any, (props: IConnectorProps) => JSX.Element] {
+    id: string,
+) => () => [TFormAction, (props: IConnectorProps) => JSX.Element] = (
+    opt,
+    id,
+) => () => {
     let extraField = { ...opt.extraField };
-    // const getValue = () =>
-    //     Object.entries(store.getState().fieldStore)
-    //         .reduce((acc, [k, v]) => ({ ...acc, [k]: v.value }), {})
 
-    // const getValidate = () =>
-    //     Object.entries(store.getState().fieldStore)
-    //         .reduce((acc, [k, v]) => ({ ...acc, [k]: v.validate }), {})
-
-    // const check = () =>
-    //     Object.entries(store.getState().fieldStore)
-    //         .reduce((acc, cur) => acc && cur[1].validate, true)
-
-    // const forceValidate = () =>
-    //     store.dispatch(action.pipeline(pipeForceValidate(), "force Update"))
-
-    // const setValue = (value: { [key: string]: any }) =>
-    //     store.dispatch(action.pipeline(pipeSetValue(value)))
-
-    // const cleanValue = () =>
-    // store.dispatch(action.pipeline(pipeCleanValue()))
     const ByteFormCtx = React.createContext<IByteFormCtx>({} as IByteFormCtx);
     const Connector = GetConnector(ByteFormCtx);
 
     return [
-        {},
+        getFormAction(id),
         props => (
             <Connector
                 {...props}
                 callback={e => props.callback && props.callback(e)}
                 ef={extraField}
+                _id={id}
             />
         ),
     ];
-}
+};
+
+const useForm = (opt: IGetFormOpt) => {
+    const id = useMemo(
+        () =>
+            Math.random()
+                .toString(36)
+                .substr(2, 10),
+        [],
+    );
+    const gF = useMemo(() => getFormHOC(opt, id), []);
+    return gF();
+};
+
 export default useForm;
