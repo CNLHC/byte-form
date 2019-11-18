@@ -45,6 +45,11 @@ export const pipeInit: (fm: AllFieldMetaUnion) => PiplineStage = (
     return e;
 };
 
+export const pipeInitAll: (fms: FieldMetaList) => PiplineStage = fms => e => {
+    fms.forEach(v => pipeInit(v)(e));
+    return e;
+};
+
 const validatorStage: (va: IValidator, key: string) => PiplineStage = (
     va,
     key,
